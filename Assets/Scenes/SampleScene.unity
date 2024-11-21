@@ -204,7 +204,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 1, g: 0.375187, b: 0.24056602, a: 0}
+  m_BackGroundColor: {r: 0.89, g: 0.4273163, b: 0.21290195, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -229,7 +229,7 @@ Camera:
   far clip plane: 100
   field of view: 34
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -288,7 +288,7 @@ GameObject:
   - component: {fileID: 822165243}
   - component: {fileID: 822165242}
   m_Layer: 0
-  m_Name: Planet1
+  m_Name: Emitter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -355,8 +355,8 @@ Transform:
   m_GameObject: {fileID: 822165241}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.61, y: 6.06, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 1}
+  m_LocalPosition: {x: -25.9, y: 6.06, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -385,7 +385,7 @@ GameObject:
   m_IsActive: 1
 --- !u!114 &965363228
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -400,7 +400,7 @@ MonoBehaviour:
   Target: {fileID: 1962987524}
 --- !u!114 &965363229
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -415,7 +415,7 @@ MonoBehaviour:
   Target: {fileID: 1215781782}
 --- !u!114 &965363230
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Property:
-    m_Name: Planet
+    m_Name: Emitter
   Target: {fileID: 822165243}
 --- !u!114 &965363231
 MonoBehaviour:
@@ -485,7 +485,7 @@ VFXRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 100
 --- !u!2083052967 &965363233
 VisualEffect:
   m_ObjectHideFlags: 0
@@ -507,6 +507,12 @@ VisualEffect:
       - m_Value: -1000
         m_Name: PlanetGravity
         m_Overridden: 1
+      - m_Value: -800
+        m_Name: MoonGravity
+        m_Overridden: 1
+      - m_Value: -2500
+        m_Name: BlackholeGravity
+        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
@@ -523,7 +529,7 @@ VisualEffect:
       - m_Value: {x: -0, y: 0, z: 0}
         m_Name: Moon_angles
         m_Overridden: 1
-      - m_Value: {x: -9.42, y: -2.44, z: 0}
+      - m_Value: {x: -11.07, y: -14.1, z: 0}
         m_Name: Moon_position
         m_Overridden: 1
       - m_Value: {x: 3, y: 3, z: 3}
@@ -532,11 +538,20 @@ VisualEffect:
       - m_Value: {x: -0, y: 0, z: 0}
         m_Name: Blackhole_angles
         m_Overridden: 1
-      - m_Value: {x: 6.29, y: -0.64, z: 0}
+      - m_Value: {x: 12.26, y: -0.64, z: 0}
         m_Name: Blackhole_position
         m_Overridden: 1
-      - m_Value: {x: 5.65, y: 5.65, z: 5.65}
+      - m_Value: {x: 10, y: 10, z: 10}
         m_Name: Blackhole_scale
+        m_Overridden: 1
+      - m_Value: {x: -0, y: 0, z: 0}
+        m_Name: Emitter_angles
+        m_Overridden: 1
+      - m_Value: {x: -25.9, y: 6.06, z: 0}
+        m_Name: Emitter_position
+        m_Overridden: 1
+      - m_Value: {x: 0.5, y: 0.5, z: 0.5}
+        m_Name: Emitter_scale
         m_Overridden: 1
     m_Vector4f:
       m_Array: []
@@ -580,7 +595,7 @@ GameObject:
   - component: {fileID: 1215781782}
   - component: {fileID: 1215781781}
   m_Layer: 0
-  m_Name: Planet2
+  m_Name: Moon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -626,7 +641,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -10
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -647,7 +662,7 @@ Transform:
   m_GameObject: {fileID: 1215781780}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.42, y: -2.44, z: 0}
+  m_LocalPosition: {x: -11.07, y: -14.1, z: 0}
   m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -776,8 +791,8 @@ Transform:
   m_GameObject: {fileID: 1962987522}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.29, y: -0.64, z: 0}
-  m_LocalScale: {x: 5.65, y: 5.65, z: 5.65}
+  m_LocalPosition: {x: 12.26, y: -0.64, z: 0}
+  m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}

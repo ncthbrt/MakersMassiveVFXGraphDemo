@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Planet2
-  m_Shader: {fileID: -6465566751694194690, guid: a204a3d84df4ad94fb6a73caaccdff12, type: 3}
+  m_Name: Blackhole
+  m_Shader: {fileID: -6465566751694194690, guid: 4e1f1e1b4a13b4037a51bf25448406ab, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -58,15 +58,18 @@ Material:
     m_Ints: []
     m_Floats:
     - _EnableExternalAlpha: 0
-    - _LightThreshold: -0.206
+    - _LightThreshold: 0
+    - _TwirlStrength: 30
     m_Colors:
-    - _BaseColor: {r: 0.109803915, g: 1, b: 0.21674493, a: 0}
+    - _BaseColor: {r: 3.1173053, g: 0.67262024, b: 0.26235282, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
+    - _LightColor: {r: 0, g: 0, b: 0, a: 0}
+    - _LightPosition: {r: 0, g: 0, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _ShadowColor: {r: 0.010902455, g: 0.01962866, b: 0.047169805, a: 0}
+    - _ShadowColor: {r: 0.367, g: 0.076369956, b: 0.029699428, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &3658601847737473925
+--- !u!114 &5730828218778789709
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
