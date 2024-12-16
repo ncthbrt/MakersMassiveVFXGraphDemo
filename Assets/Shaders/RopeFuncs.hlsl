@@ -1,3 +1,5 @@
+#ifndef ROPE_FUNCS
+#define ROPE_FUNCS
 // Check isnan(value) before use.
 inline uint OrderPreservingFloatMap(float value)
 {
@@ -34,8 +36,9 @@ inline void WriteToBuffer(RWStructuredBuffer<uint> buffer, uint index, uint3 inP
 }
 
 
-void WriteBuffer(VFXAttributes attributes, RWStructuredBuffer<uint> buffer, uint index) {        
+void WriteInitialPositions(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, uint index) {        
     WriteToBuffer(buffer, index, attributes.position.xyz);
+    attributes.oldPosition = attributes.position;
 }
 
 inline uint3 ReadBuffer(RWStructuredBuffer<uint> buffer, uint index) {
@@ -48,41 +51,60 @@ inline uint3 ReadBuffer(RWStructuredBuffer<uint> buffer, uint index) {
 
 
 void ReadPosition(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, uint index) {
-    attributes.position = Uint3ToFloat3(ReadBuffer(buffer, index));    
+    attributes.position = Uint3ToFloat3(ReadBuffer(buffer, index));
+}
+
+void SetInitialLock(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, uint currIndex)
+{
+    uint ignored = 0;    
+    InterlockedExchange(buffer[currIndex * 4 + 3], currIndex, ignored);
 }
 
 void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, float targetDist, uint bufferSize, uint currIndex, float deltaTime)
 {
-    float timeStep = max(deltaTime / 8.0, 0.001);
-    InterlockedExchange(buffer[currIndex * 4 + 3], currIndex, ignored);
+    float timeStep = deltaTime / 4.0;
+    timeStep *= timeStep;
+    uint mutex = 0;
+    uint ignored = 0;
 
-    for (uint k = 0; k < 8; ++k)
-    {           
-        
-        uint ignored = 0;
-        uint mutex = 0;
-        WriteToBuffer(buffer, currIndex, Float3ToUint3(attributes.position));
-        //if (currIndex + 1 < bufferSize)
-        //{
-        //}
-        //else
-        //{
-            //InterlockedExchange(buffer[currIndex * 4 + 3], currIndex - 1, ignored);
-        //}
-        
-        if (currIndex != 0)
+    [loop]
+    for (uint k = 0; k < 4; ++k)
+    {
+        [loop]
+        for (uint j = 0; j < 100; ++j)
         {
-            float3 oldPos = attributes.position;
-            attributes.position = 2.0 * attributes.position - attributes.oldPosition + ((timeStep * timeStep) * attributes.acceleration);
-            attributes.oldPosition = oldPos;
+            InterlockedAdd(buffer[currIndex * 4 + 3], 0, mutex);
+            if (mutex == currIndex)
+            {
+                float3 current = k == 0 ? attributes.position : Uint3ToFloat3(ReadBuffer(buffer, currIndex));
+                attributes.position = current;
+                if (currIndex > 0) 
+                {
+                    attributes.position = 2.0 * current - attributes.oldPosition + (timeStep * attributes.acceleration);
+                    attributes.oldPosition = current;
+                }
+                WriteToBuffer(buffer, currIndex, Float3ToUint3(attributes.position));
+                if (currIndex % 2 == 0)
+                {
+                    if(currIndex + 1 < bufferSize) 
+                    {
+                        InterlockedExchange(buffer[currIndex * 4 + 3], currIndex + 1, ignored);
+                    }
+                    else
+                    {
+                        InterlockedExchange(buffer[currIndex * 4 + 3], currIndex - 1, ignored);
+                    }
+                }                
+                break;
+            }
         }
-
-
+        [branch]
         if (currIndex % 2 == 1)
         {
             for (uint i = 0; i < 8; ++i)
             {
-                for (uint j = 0; j < 1000; ++j)
+                [loop]
+                for (uint j = 0; j < 100; ++j)
                 {
                     InterlockedAdd(buffer[(currIndex - 1) * 4 + 3], 0, mutex);
                     if (mutex == currIndex)
@@ -114,10 +136,11 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
                     }
                 }
             
-            
+                [branch]
                 if (currIndex + 1 < bufferSize)
                 {
-                    for (uint j = 0; j < 1000; ++j)
+                    [loop]
+                    for (uint j = 0; j < 100; ++j)
                     {
                         InterlockedAdd(buffer[(currIndex + 1) * 4 + 3], 0, mutex);
                         if (mutex == currIndex)
@@ -131,9 +154,17 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
                     
                             WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (halfDist * delta)));
                             WriteToBuffer(buffer, currIndex + 1, Float3ToUint3(other - (halfDist * delta)));
-                            if (currIndex + 2 < bufferSize)
+                            if (currIndex + 1 < bufferSize)
                             {
-                                InterlockedExchange(buffer[(currIndex + 1) * 4 + 3], currIndex + 2, ignored);
+                                if(i == 7 || currIndex + 2 >= bufferSize) 
+                                {
+                                    InterlockedExchange(buffer[(currIndex + 1) * 4 + 3], currIndex + 1, ignored);
+                                }
+                                else 
+                                {
+                                    InterlockedExchange(buffer[(currIndex + 1) * 4 + 3], currIndex + 2, ignored);
+                                }
+                                
                             }
                             break;
                         }
@@ -142,6 +173,17 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
             }
         }
     }
-    
+
+    [loop]
+    for (uint j = 0; j < 100; ++j)
+    {
+        InterlockedAdd(buffer[currIndex * 4 + 3], 0, mutex);
+        if (mutex == currIndex)
+        {   
+            attributes.position = Uint3ToFloat3(ReadBuffer(buffer, currIndex));
+            break;
+        }
+    }
     
 }
+#endif
