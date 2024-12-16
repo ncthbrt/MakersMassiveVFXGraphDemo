@@ -62,12 +62,12 @@ void SetInitialLock(inout VFXAttributes attributes, RWStructuredBuffer<uint> buf
 
 void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, float targetDist, uint bufferSize, uint currIndex, float deltaTime, float stiffness)
 {
-    float timeStep = deltaTime / 4.0;
+    float timeStep = deltaTime / 8.0;
     timeStep *= timeStep;
     uint mutex = 0;
     uint ignored = 0;
     [loop]
-    for (uint k = 0; k < 4; ++k)
+    for (uint k = 0; k < 8; ++k)
     {
         [loop]
         for (uint j = 0; j < 100; ++j)
@@ -80,8 +80,8 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
                 if (currIndex > 0) 
                 {
                     attributes.position = 2.0 * current - attributes.oldPosition + (timeStep * attributes.acceleration);
-                    attributes.oldPosition = current;
                 }
+                attributes.oldPosition = attributes.position;
                 WriteToBuffer(buffer, currIndex, Float3ToUint3(attributes.position));
                 if (currIndex % 2 == 0)
                 {
@@ -100,6 +100,7 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
         [branch]
         if (currIndex % 2 == 1)
         {
+            [loop]
             for (uint i = 0; i < 16; ++i)
             {
                 [loop]
@@ -116,7 +117,8 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
                         delta = SafeNormalize(delta);
                         if (currIndex == bufferSize - 1)
                         {
-                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (scaledDist * delta)));
+                            // WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (scaledDist * delta)));
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (scaledDist  * stiffness* delta)));
                         }
                         else
                         {
@@ -180,6 +182,7 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
         if (mutex == currIndex)
         {   
             attributes.position = Uint3ToFloat3(ReadBuffer(buffer, currIndex));
+            attributes.oldPosition = attributes.position;
             break;
         }
     }
