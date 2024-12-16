@@ -26,102 +26,122 @@ inline float3 Uint3ToFloat3(uint3 value)
     return float3(InverseOrderPreservingFloatMap(value.x), InverseOrderPreservingFloatMap(value.y), InverseOrderPreservingFloatMap(value.z));
 }
 
-inline void WriteToPositionsBuffer(RWStructuredBuffer<uint> positions, uint index, uint3 inPosition) {
+inline void WriteToBuffer(RWStructuredBuffer<uint> buffer, uint index, uint3 inPosition) {
     uint x,y,z,w = 0;
-    InterlockedExchange(positions[index*4], inPosition.x, x);
-    InterlockedExchange(positions[index*4+1], inPosition.y, y);
-    InterlockedExchange(positions[index*4+2], inPosition.z, z);
-    InterlockedExchange(positions[index*4+3], index + 1, w);
+    InterlockedExchange(buffer[index*4], inPosition.x, x);
+    InterlockedExchange(buffer[index*4+1], inPosition.y, y);
+    InterlockedExchange(buffer[index*4+2], inPosition.z, z);
 }
 
 
-void WriteBuffer(VFXAttributes attributes, RWStructuredBuffer<uint> positions, uint index) {        
-    WriteToPositionsBuffer(positions, index, attributes.position.xyz);
+void WriteBuffer(VFXAttributes attributes, RWStructuredBuffer<uint> buffer, uint index) {        
+    WriteToBuffer(buffer, index, attributes.position.xyz);
 }
 
-inline uint3 ReadPositionsBuffer(RWStructuredBuffer<uint> positions, uint index) {
+inline uint3 ReadBuffer(RWStructuredBuffer<uint> buffer, uint index) {
     uint x,y,z = 0;
-    InterlockedAdd(positions[index * 4], 0, x);
-    InterlockedAdd(positions[index * 4 + 1], 0, y);
-    InterlockedAdd(positions[index * 4 + 2], 0, z);
+    InterlockedAdd(buffer[index * 4], 0, x);
+    InterlockedAdd(buffer[index * 4 + 1], 0, y);
+    InterlockedAdd(buffer[index * 4 + 2], 0, z);
     return uint3(x,y,z);
 }
 
 
-void IntegrateVerlet(inout VFXAttributes attributes, RWStructuredBuffer<uint> positions, uint index, float deltaTime)
-{
-    attributes.position = 2.0 * Uint3ToFloat3(ReadPositionsBuffer(positions, index)) - attributes.oldPosition + ((deltaTime*deltaTime) * attributes.acceleration);    
-    WriteToPositionsBuffer(positions, index, Float3ToUint3(attributes.position));
+void ReadPosition(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, uint index) {
+    attributes.position = Uint3ToFloat3(ReadBuffer(buffer, index));    
 }
 
-
-void ReadPosition(inout VFXAttributes attributes, RWStructuredBuffer<uint> positions, uint index) {
-    attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, index));    
-}
-
-void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> positions, float targetDist, uint bufferSize, uint currIndex)
+void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, float targetDist, uint bufferSize, uint currIndex, float deltaTime)
 {
-    uint ignored = 0;
-    uint mutex = 0;
-    WriteToPositionsBuffer(positions, currIndex, Float3ToUint3(attributes.position));
-    InterlockedExchange(positions[currIndex * 4 + 3], currIndex + 1, ignored);
-    
-    for (uint i = 0; i < 48; ++i) {
-        if (currIndex % 2 == 1) 
-        { 
-            for(uint j=0; j<100; ++j)
-            {
-                InterlockedAdd(positions[(currIndex - 1) * 4 + 3], 0, mutex);
+    float timeStep = max(deltaTime / 8.0, 0.001);
+    InterlockedExchange(buffer[currIndex * 4 + 3], currIndex, ignored);
 
-                if(mutex == currIndex)
-                {
-                    float3 current = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
-                    float3 other = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex - 1));
-                    float3 delta = (current - other);
-                    float dist = length(delta);
-                    float halfDist = (dist - targetDist) / 2.0;
-                    delta = SafeNormalize(delta);
-                    if (currIndex == bufferSize - 1)
-                    {
-                        WriteToPositionsBuffer(positions, currIndex, Float3ToUint3(current + ((halfDist + halfDist) * delta)));
-                    }
-                    else
-                    {
-                        WriteToPositionsBuffer(positions, currIndex, Float3ToUint3(current + (halfDist * delta)));
-                        WriteToPositionsBuffer(positions, currIndex - 1, Float3ToUint3(other - (halfDist * delta)));
-                    }
+    for (uint k = 0; k < 8; ++k)
+    {           
+        
+        uint ignored = 0;
+        uint mutex = 0;
+        WriteToBuffer(buffer, currIndex, Float3ToUint3(attributes.position));
+        //if (currIndex + 1 < bufferSize)
+        //{
+        //}
+        //else
+        //{
+            //InterlockedExchange(buffer[currIndex * 4 + 3], currIndex - 1, ignored);
+        //}
+        
+        if (currIndex != 0)
+        {
+            float3 oldPos = attributes.position;
+            attributes.position = 2.0 * attributes.position - attributes.oldPosition + ((timeStep * timeStep) * attributes.acceleration);
+            attributes.oldPosition = oldPos;
+        }
 
-                    InterlockedExchange(positions[(currIndex-1) * 4 + 3], currIndex - 2, ignored);
-                    break;
-                }
-            }
-            
-            
-            if (currIndex + 1 < bufferSize)
+
+        if (currIndex % 2 == 1)
+        {
+            for (uint i = 0; i < 8; ++i)
             {
-                for(uint k=0; k<100; ++k)
+                for (uint j = 0; j < 1000; ++j)
                 {
-                    InterlockedAdd(positions[(currIndex+1) * 4 + 3], 0, mutex);
-                    if(mutex == currIndex)
+                    InterlockedAdd(buffer[(currIndex - 1) * 4 + 3], 0, mutex);
+                    if (mutex == currIndex)
                     {
-                        float3 current = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
-                        float3 other = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex + 1));
-                        
-                        float3 delta = (current - other);
+                        float3 current = Uint3ToFloat3(ReadBuffer(buffer, currIndex));
+                        float3 other = Uint3ToFloat3(ReadBuffer(buffer, currIndex - 1));
+                        float3 delta = (other - current);
                         float dist = length(delta);
                         float halfDist = (dist - targetDist) / 2.0;
                         delta = SafeNormalize(delta);
+                        if (currIndex == bufferSize - 1)
+                        {
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + ((halfDist + halfDist) * delta)));
+                        }
+                        else
+                        {
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (halfDist * delta)));
+                            if (currIndex - 1 != 0)
+                            {
+                                WriteToBuffer(buffer, currIndex - 1, Float3ToUint3(other - (halfDist * delta)));
+                            }
+                        }
                     
-                        WriteToPositionsBuffer(positions, currIndex, Float3ToUint3(current + (halfDist * delta)));
-                        WriteToPositionsBuffer(positions, currIndex + 1, Float3ToUint3(other - (halfDist * delta)));
-                        InterlockedExchange(positions[(currIndex+1) * 4 + 3], currIndex + 2, ignored);
+                        if (currIndex >= 2)
+                        {
+                            InterlockedExchange(buffer[(currIndex - 1) * 4 + 3], currIndex - 2, ignored);
+                        }
                         break;
+                    }
+                }
+            
+            
+                if (currIndex + 1 < bufferSize)
+                {
+                    for (uint j = 0; j < 1000; ++j)
+                    {
+                        InterlockedAdd(buffer[(currIndex + 1) * 4 + 3], 0, mutex);
+                        if (mutex == currIndex)
+                        {
+                            float3 current = Uint3ToFloat3(ReadBuffer(buffer, currIndex));
+                            float3 other = Uint3ToFloat3(ReadBuffer(buffer, currIndex + 1));
+                            float3 delta = (other - current);
+                            float dist = length(delta);
+                            float halfDist = (dist - targetDist) / 2.0;
+                            delta = SafeNormalize(delta);
+                    
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (halfDist * delta)));
+                            WriteToBuffer(buffer, currIndex + 1, Float3ToUint3(other - (halfDist * delta)));
+                            if (currIndex + 2 < bufferSize)
+                            {
+                                InterlockedExchange(buffer[(currIndex + 1) * 4 + 3], currIndex + 2, ignored);
+                            }
+                            break;
+                        }
                     }
                 }
             }
         }
-        attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
     }
-
-    attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
+    
+    
 }

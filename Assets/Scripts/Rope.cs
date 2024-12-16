@@ -13,13 +13,13 @@ public class Rope : MonoBehaviour
     void Start()
     {
         _positionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 32 * 4, sizeof(uint));
-        _positionsBuffer.SetData(new uint[4 * 32]);
+        _positionsBuffer.SetData(new uint[4 * 32]);        
         RopeEffect.SetGraphicsBuffer(RopePositions, _positionsBuffer);
     }
 
     void Update()
     {
-        RopeEffect.SetGraphicsBuffer(RopePositions, _positionsBuffer);
+        //RopeEffect.SetGraphicsBuffer(RopePositions, _positionsBuffer);
     }
 
     void OnDestroy()
