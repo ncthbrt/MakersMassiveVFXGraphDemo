@@ -60,13 +60,12 @@ void SetInitialLock(inout VFXAttributes attributes, RWStructuredBuffer<uint> buf
     InterlockedExchange(buffer[currIndex * 4 + 3], currIndex, ignored);
 }
 
-void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, float targetDist, uint bufferSize, uint currIndex, float deltaTime)
+void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> buffer, float targetDist, uint bufferSize, uint currIndex, float deltaTime, float stiffness)
 {
     float timeStep = deltaTime / 4.0;
     timeStep *= timeStep;
     uint mutex = 0;
     uint ignored = 0;
-
     [loop]
     for (uint k = 0; k < 4; ++k)
     {
@@ -101,7 +100,7 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
         [branch]
         if (currIndex % 2 == 1)
         {
-            for (uint i = 0; i < 8; ++i)
+            for (uint i = 0; i < 16; ++i)
             {
                 [loop]
                 for (uint j = 0; j < 100; ++j)
@@ -113,18 +112,18 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
                         float3 other = Uint3ToFloat3(ReadBuffer(buffer, currIndex - 1));
                         float3 delta = (other - current);
                         float dist = length(delta);
-                        float halfDist = (dist - targetDist) / 2.0;
+                        float scaledDist = (dist - targetDist);
                         delta = SafeNormalize(delta);
                         if (currIndex == bufferSize - 1)
                         {
-                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + ((halfDist + halfDist) * delta)));
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (scaledDist * delta)));
                         }
                         else
                         {
-                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (halfDist * delta)));
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (scaledDist  * stiffness* delta)));
                             if (currIndex - 1 != 0)
                             {
-                                WriteToBuffer(buffer, currIndex - 1, Float3ToUint3(other - (halfDist * delta)));
+                                WriteToBuffer(buffer, currIndex - 1, Float3ToUint3(other - (scaledDist * stiffness* delta)));
                             }
                         }
                     
@@ -149,11 +148,11 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<ui
                             float3 other = Uint3ToFloat3(ReadBuffer(buffer, currIndex + 1));
                             float3 delta = (other - current);
                             float dist = length(delta);
-                            float halfDist = (dist - targetDist) / 2.0;
+                            float scaledDist = (dist - targetDist) * stiffness;
                             delta = SafeNormalize(delta);
                     
-                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (halfDist * delta)));
-                            WriteToBuffer(buffer, currIndex + 1, Float3ToUint3(other - (halfDist * delta)));
+                            WriteToBuffer(buffer, currIndex, Float3ToUint3(current + (scaledDist * delta)));
+                            WriteToBuffer(buffer, currIndex + 1, Float3ToUint3(other - (scaledDist * delta)));
                             if (currIndex + 1 < bufferSize)
                             {
                                 if(i == 7 || currIndex + 2 >= bufferSize) 
