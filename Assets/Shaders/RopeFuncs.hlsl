@@ -1,5 +1,3 @@
-#ifndef ROPE_FUNCS
-#define ROPE_FUNCS
 // Check isnan(value) before use.
 inline uint OrderPreservingFloatMap(float value)
 {
@@ -23,61 +21,60 @@ inline uint3 Float3ToUint3(float3 value)
     return uint3(OrderPreservingFloatMap(value.x),OrderPreservingFloatMap(value.y), OrderPreservingFloatMap(value.z));
 }
 
-inline float3 Uint3ToFloat3(float3 value)
+inline float3 Uint3ToFloat3(uint3 value)
 {
     return float3(InverseOrderPreservingFloatMap(value.x), InverseOrderPreservingFloatMap(value.y), InverseOrderPreservingFloatMap(value.z));
 }
 
-void WriteToPositionsBuffer(RWByteAddressBuffer positions, uint index, uint3 inPosition) {
-    uint x,y,z = 0;
-    positions.InterlockedExchange(index*12, inPosition.x, x);
-    positions.InterlockedExchange(index*12+4, inPosition.y, y);
-    positions.InterlockedExchange(index*12+8, inPosition.z, z);
+inline void WriteToPositionsBuffer(RWStructuredBuffer<uint> positions, uint index, uint3 inPosition) {
+    uint x,y,z,w = 0;
+    InterlockedExchange(positions[index*4], inPosition.x, x);
+    InterlockedExchange(positions[index*4+1], inPosition.y, y);
+    InterlockedExchange(positions[index*4+2], inPosition.z, z);
+    InterlockedExchange(positions[index*4+3], index + 1, w);
 }
 
 
-void WriteBuffer(VFXAttributes attributes, RWByteAddressBuffer positions, uint index) {    
-    uint3 position = Float3ToUint3(attributes.position);
-    WriteToPositionsBuffer(positions, index, position);
+void WriteBuffer(VFXAttributes attributes, RWStructuredBuffer<uint> positions, uint index) {        
+    WriteToPositionsBuffer(positions, index, attributes.position.xyz);
 }
 
-inline uint3 ReadPositionsBuffer(RWByteAddressBuffer positions, uint index) {
+inline uint3 ReadPositionsBuffer(RWStructuredBuffer<uint> positions, uint index) {
     uint x,y,z = 0;
-    positions.InterlockedAdd(index * 12, 0, x);
-    positions.InterlockedAdd(index * 12 + 4, 0, y);
-    positions.InterlockedAdd(index * 12 + 8, 0, z);
+    InterlockedAdd(positions[index * 4], 0, x);
+    InterlockedAdd(positions[index * 4 + 1], 0, y);
+    InterlockedAdd(positions[index * 4 + 2], 0, z);
     return uint3(x,y,z);
 }
 
 
-void IntegrateVerlet(inout VFXAttributes attributes, float deltaTime)
+void IntegrateVerlet(inout VFXAttributes attributes, RWStructuredBuffer<uint> positions, uint index, float deltaTime)
 {
-    attributes.position = 2 * attributes.position - attributes.oldPosition + ((deltaTime*deltaTime) * attributes.acceleration);
+    attributes.position = 2.0 * Uint3ToFloat3(ReadPositionsBuffer(positions, index)) - attributes.oldPosition + ((deltaTime*deltaTime) * attributes.acceleration);    
+    WriteToPositionsBuffer(positions, index, Float3ToUint3(attributes.position));
 }
 
 
-void ReadPosition(inout VFXAttributes attributes, RWByteAddressBuffer positions, uint index) {
-    attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, index));
+void ReadPosition(inout VFXAttributes attributes, RWStructuredBuffer<uint> positions, uint index) {
+    attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, index));    
 }
 
-void UpdateRopeImpl(inout VFXAttributes attributes, RWByteAddressBuffer positions, RWByteAddressBuffer mutexes, float targetDist, uint bufferSize, uint currIndex)
+void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<uint> positions, float targetDist, uint bufferSize, uint currIndex)
 {
     uint ignored = 0;
     uint mutex = 0;
-    WriteToPositionsBuffer(positions, currIndex, attributes.position);
-    mutexes.InterlockedExchange(currIndex * 4, currIndex - 1, ignored);
-    {
-        for (uint i = 0; i < 12; ++i) {
+    WriteToPositionsBuffer(positions, currIndex, Float3ToUint3(attributes.position));
+    InterlockedExchange(positions[currIndex * 4 + 3], currIndex + 1, ignored);
+    
+    for (uint i = 0; i < 48; ++i) {
         if (currIndex % 2 == 1) 
-        {   
-            for(uint j=0; j<1000; ++j)
+        { 
+            for(uint j=0; j<100; ++j)
             {
-                mutexes.InterlockedAdd((currIndex - 1)*4, 0, mutex);
+                InterlockedAdd(positions[(currIndex - 1) * 4 + 3], 0, mutex);
 
                 if(mutex == currIndex)
                 {
-                    // float3 current = float3(0.0, 0.0, 0.0);
-                    // float3 other = float3(0.0, 0.0, 0.0);
                     float3 current = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
                     float3 other = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex - 1));
                     float3 delta = (current - other);
@@ -94,7 +91,7 @@ void UpdateRopeImpl(inout VFXAttributes attributes, RWByteAddressBuffer position
                         WriteToPositionsBuffer(positions, currIndex - 1, Float3ToUint3(other - (halfDist * delta)));
                     }
 
-                    mutexes.InterlockedExchange((currIndex - 1) * 4, currIndex - 2, ignored);
+                    InterlockedExchange(positions[(currIndex-1) * 4 + 3], currIndex - 2, ignored);
                     break;
                 }
             }
@@ -102,9 +99,9 @@ void UpdateRopeImpl(inout VFXAttributes attributes, RWByteAddressBuffer position
             
             if (currIndex + 1 < bufferSize)
             {
-                for(uint k=0; k<1000; ++k) 
+                for(uint k=0; k<100; ++k)
                 {
-                    mutexes.InterlockedAdd((currIndex+1) * 4, 0, mutex);
+                    InterlockedAdd(positions[(currIndex+1) * 4 + 3], 0, mutex);
                     if(mutex == currIndex)
                     {
                         float3 current = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
@@ -115,21 +112,16 @@ void UpdateRopeImpl(inout VFXAttributes attributes, RWByteAddressBuffer position
                         float halfDist = (dist - targetDist) / 2.0;
                         delta = SafeNormalize(delta);
                     
-                        WriteToPositionsBuffer(positions, currIndex, current + (halfDist * delta));
-                        WriteToPositionsBuffer(positions, currIndex + 1, other - (halfDist * delta));
-                        mutexes.InterlockedExchange((currIndex + 1) * 4, currIndex + 2, ignored);
+                        WriteToPositionsBuffer(positions, currIndex, Float3ToUint3(current + (halfDist * delta)));
+                        WriteToPositionsBuffer(positions, currIndex + 1, Float3ToUint3(other - (halfDist * delta)));
+                        InterlockedExchange(positions[(currIndex+1) * 4 + 3], currIndex + 2, ignored);
                         break;
                     }
                 }
             }
         }
+        attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
     }
-    }
+
     attributes.position = Uint3ToFloat3(ReadPositionsBuffer(positions, currIndex));
 }
-
-void UpdateRope(inout VFXAttributes attributes, RWByteAddressBuffer positions, RWByteAddressBuffer mutexes, float targetDist, uint bufferSize, uint currIndex)
-{
-    UpdateRopeImpl(attributes, positions, mutexes, targetDist, bufferSize, currIndex);   
-}
-#endif

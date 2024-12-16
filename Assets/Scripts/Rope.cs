@@ -6,26 +6,28 @@ using UnityEngine.VFX;
 [ExecuteInEditMode]
 public class Rope : MonoBehaviour
 {
-    private static readonly int Positions = Shader.PropertyToID("Positions");
-    private static readonly int Mutexes = Shader.PropertyToID("Mutexes");
+    private static readonly int RopePositions = Shader.PropertyToID("RopePositions");
 
     [field: SerializeField] public VisualEffect RopeEffect { get; private set; }
-    private GraphicsBuffer _previousPositionsBuffer;
-    private GraphicsBuffer _mutexBuffer;
-
+    private GraphicsBuffer _positionsBuffer;
     void Start()
     {
-        _previousPositionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, 32, 3 * sizeof(uint));
-        _previousPositionsBuffer.SetData(new byte[3* sizeof(uint) * 32]);
-        _mutexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Raw, 32, sizeof(uint));
-        _mutexBuffer.SetData(new byte[sizeof(uint) * 32]);
-        RopeEffect.SetGraphicsBuffer(Positions, _previousPositionsBuffer);
-        RopeEffect.SetGraphicsBuffer(Mutexes, _mutexBuffer);
+        _positionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 32 * 4, sizeof(uint));
+        _positionsBuffer.SetData(new uint[4 * 32]);
+        RopeEffect.SetGraphicsBuffer(RopePositions, _positionsBuffer);
     }
 
     void Update()
     {
-        RopeEffect.SetGraphicsBuffer(Positions, _previousPositionsBuffer);
-        RopeEffect.SetGraphicsBuffer(Mutexes, _mutexBuffer);
+        RopeEffect.SetGraphicsBuffer(RopePositions, _positionsBuffer);
+    }
+
+    void OnDestroy()
+    {
+        if (_positionsBuffer != null)
+        {
+            _positionsBuffer.Dispose();
+            _positionsBuffer = null;
+        }
     }
 }
