@@ -12,8 +12,8 @@ public class Rope : MonoBehaviour
     private GraphicsBuffer _positionsBuffer;
     void Start()
     {
-        _positionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 32 * 4, sizeof(uint));
-        _positionsBuffer.SetData(new uint[4 * 32]);        
+        _positionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, 32 * 4, sizeof(int));
+        _positionsBuffer.SetData(new int[4 * 32]);
         RopeEffect.SetGraphicsBuffer(RopePositions, _positionsBuffer);
     }
 
