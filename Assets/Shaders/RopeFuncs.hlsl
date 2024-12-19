@@ -38,9 +38,9 @@ inline int3 AddToBuffer(RWStructuredBuffer<int> buffer, uint index, int3 delta) 
 }
 
 
-void WritePositions(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, uint index) {        
+void WritePositions(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, uint particlesPerStrip, uint stripIndex, uint particleIndexInStrip) {        
+    uint index = stripIndex * particlesPerStrip + particleIndexInStrip;
     WriteToBuffer(buffer, index, Float3ToInt3(attributes.position));
-    attributes.oldPosition = attributes.position;
 }
 
 inline int3 ReadBuffer(RWStructuredBuffer<int> buffer, uint index) {
@@ -52,15 +52,16 @@ inline int3 ReadBuffer(RWStructuredBuffer<int> buffer, uint index) {
 }
 
 
-void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, float targetDist, uint bufferSize, uint currIndex, float deltaTime, float stiffness)
+void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, float targetDist, uint particlesPerStrip, uint stripIndex, uint particleIndexInStrip, float deltaTime, float stiffness, float pinWeight)
 {
     float timeStep = deltaTime / 8.0;
     timeStep *= timeStep;
-    int vertletWeight = (int) saturate(currIndex);
+    float vertletWeight = 1 - pinWeight;
     timeStep *= vertletWeight;
     targetDist *= vertletWeight;
     stiffness *= vertletWeight;
-    float3 prevPosition = attributes.oldPosition;    
+    float3 prevPosition = attributes.oldPosition;
+    uint currIndex = stripIndex * particlesPerStrip + particleIndexInStrip;
     [unroll]
     for (uint k = 0; k < 8; ++k)
     {
@@ -72,15 +73,18 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<in
         {
             for (int j = -1; j<=1; j+=2)
             {
-                uint index = min(bufferSize - 1, (uint) ((int)currIndex + j));
-                float3 other = Int3ToFloat3(ReadBuffer(buffer, index));
-                float3 delta = other - attributes.position;
-                float dist = length(delta);
-                float scaledDist = (dist - targetDist) * stiffness;
-                delta = SafeNormalize(delta);
-                attributes.position = Int3ToFloat3(AddToBuffer(buffer, currIndex, Float3ToInt3((scaledDist  * delta))));
+                uint otherIndex = stripIndex * particlesPerStrip + min(particlesPerStrip - 1, (uint) ((int)particleIndexInStrip + j));
+                if(otherIndex != currIndex) 
+                {
+                    float3 other = Int3ToFloat3(ReadBuffer(buffer, otherIndex));
+                    float3 delta = other - attributes.position;
+                    float dist = length(delta);
+                    float scaledDist = (dist - targetDist) * stiffness;
+                    delta = SafeNormalize(delta);
+                    attributes.position = Int3ToFloat3(AddToBuffer(buffer, currIndex, Float3ToInt3((scaledDist  * delta))));
+                }
             }
-        }
+        }        
     }
 } 
 
