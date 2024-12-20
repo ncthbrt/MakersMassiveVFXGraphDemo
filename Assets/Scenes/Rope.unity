@@ -483,8 +483,11 @@ VisualEffect:
       - m_Value: 0.5
         m_Name: Stiffness
         m_Overridden: 1
-      - m_Value: 0.5
+      - m_Value: 1.1
         m_Name: Collider_radius
+        m_Overridden: 1
+      - m_Value: 12
+        m_Name: RopeLength
         m_Overridden: 1
     m_Vector2f:
       m_Array: []
@@ -493,7 +496,7 @@ VisualEffect:
       - m_Value: {x: 0, y: -6, z: 0}
         m_Name: RopeEnd_position
         m_Overridden: 1
-      - m_Value: {x: 6.416, y: 1.659, z: -5.28}
+      - m_Value: {x: 2.976, y: 0.88, z: -2.356}
         m_Name: Collider_transform_position
         m_Overridden: 1
     m_Vector4f:
@@ -521,7 +524,7 @@ Transform:
   m_GameObject: {fileID: 1837904333}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.852, y: 0, z: -6}
+  m_LocalPosition: {x: -3.85, y: 3.086, z: -6.648}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -540,7 +543,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <RopeEffect>k__BackingField: {fileID: 1837904335}
-  <MaxParticleCount>k__BackingField: 128
+  <ParticleSystemName>k__BackingField: Rope
+  <BufferName>k__BackingField: RopeBuffer
 --- !u!114 &1837904338
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -611,7 +615,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.5
+  m_Radius: 0.55
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1872913975
 MeshRenderer:
@@ -675,8 +679,8 @@ Transform:
   m_GameObject: {fileID: 1872913973}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.416, y: 1.659, z: -5.28}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 2.976, y: 0.88, z: -2.356}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
