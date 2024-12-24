@@ -38,12 +38,12 @@ inline int3 AddToBuffer(RWStructuredBuffer<int> buffer, uint index, int3 delta) 
 }
 
 
-void WritePositions(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, uint particlesPerStrip, uint stripIndex, uint particleIndexInStrip) {        
-    uint index = stripIndex * particlesPerStrip + particleIndexInStrip;
+void WritePositions(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer) {        
+    uint index = attributes.stripIndex * attributes.particleCountInStrip + attributes.particleIndexInStrip;
     WriteToBuffer(buffer, index, Float3ToInt3(attributes.position));
 }
 
-inline int3 ReadBuffer(RWStructuredBuffer<int> buffer, uint index) {
+inline int3 AtomicReadBuffer(RWStructuredBuffer<int> buffer, uint index) {
     int x,y,z = 0;
     InterlockedAdd(buffer[index * 4], 0, x);
     InterlockedAdd(buffer[index * 4 + 1], 0, y);
@@ -51,8 +51,20 @@ inline int3 ReadBuffer(RWStructuredBuffer<int> buffer, uint index) {
     return int3(x,y,z);
 }
 
+inline int3 ReadBuffer(RWStructuredBuffer<int> buffer, uint index) 
+{
+    return int3(buffer[index * 4], buffer[index * 4 + 1], buffer[index * 4 + 2]);
+}
 
-void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, float targetDist, uint particlesPerStrip, uint stripIndex, uint particleIndexInStrip, float deltaTime, float stiffness, float pinWeight)
+
+void SamplePosition(RWStructuredBuffer<int> buffer, uint particleCountPerStrip, uint stripIndex, uint particleIndexInStrip, out float3 position) 
+{
+    uint index = stripIndex * particleCountPerStrip + particleIndexInStrip;
+    position = Int3ToFloat3(ReadBuffer(buffer, index));
+}
+
+
+void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<int> buffer, float targetDist, float deltaTime, float stiffness, float pinWeight)
 {
     float timeStep = deltaTime / 8.0;
     timeStep *= timeStep;
@@ -61,7 +73,7 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<in
     targetDist *= vertletWeight;
     stiffness *= vertletWeight;
     float3 prevPosition = attributes.oldPosition;
-    uint currIndex = stripIndex * particlesPerStrip + particleIndexInStrip;
+    uint currIndex = attributes.stripIndex * attributes.particleCountInStrip + attributes.particleIndexInStrip;
     [unroll]
     for (uint k = 0; k < 8; ++k)
     {
@@ -73,10 +85,10 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<in
         {
             for (int j = -1; j<=1; j+=2)
             {
-                uint otherIndex = stripIndex * particlesPerStrip + min(particlesPerStrip - 1, (uint) ((int)particleIndexInStrip + j));
-                if(otherIndex != currIndex) 
+                uint otherIndex = attributes.stripIndex * attributes.particleCountInStrip + min(attributes.particleCountInStrip - 1, (uint) ((int)attributes.particleIndexInStrip + j));
+                if(otherIndex != currIndex)
                 {
-                    float3 other = Int3ToFloat3(ReadBuffer(buffer, otherIndex));
+                    float3 other = Int3ToFloat3(AtomicReadBuffer(buffer, otherIndex));
                     float3 delta = other - attributes.position;
                     float dist = length(delta);
                     float scaledDist = (dist - targetDist) * stiffness;
@@ -84,7 +96,7 @@ void UpdateRopeConstraints(inout VFXAttributes attributes, RWStructuredBuffer<in
                     attributes.position = Int3ToFloat3(AddToBuffer(buffer, currIndex, Float3ToInt3((scaledDist  * delta))));
                 }
             }
-        }        
+        }
     }
 } 
 
