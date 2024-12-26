@@ -544,7 +544,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <RopeEffect>k__BackingField: {fileID: 1837904335}
   <ParticleSystemName>k__BackingField: Rope
-  <BufferName>k__BackingField: RopePositions
+  <PositionsBufferName>k__BackingField: RopeBuffer
+  <StripBufferName>k__BackingField: StripBuffer
+  <StripCount>k__BackingField: 64
 --- !u!114 &1837904338
 MonoBehaviour:
   m_ObjectHideFlags: 2
