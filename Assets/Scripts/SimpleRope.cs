@@ -3,7 +3,7 @@ using UnityEngine.VFX;
 
 [ExecuteInEditMode]
 public class SimpleRope : MonoBehaviour
-{
+{   
     [field: SerializeField] public VisualEffect RopeEffect { get; private set; }
     [field: SerializeField] public string ParticleSystemName { get; private set; } = "System";
     [field: SerializeField] public string PositionsBufferName { get; private set; } = "RopeBuffer";
@@ -15,10 +15,10 @@ public class SimpleRope : MonoBehaviour
     void Start()
     {
         var capacity = RopeEffect.GetParticleSystemInfo(ParticleSystemName).capacity;
-        _positionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, (int)(capacity * 3), sizeof(int));
-        _positionsBuffer.SetData(new int[3 * capacity]);
-        _stripBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, (int)StripCount + 1, sizeof(uint));
-        _stripBuffer.SetData(new uint[StripCount + 1]);
+        _positionsBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, (int)(capacity * 4), sizeof(int));
+        _positionsBuffer.SetData(new int[4 * capacity]);
+        _stripBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, (int)(StripCount + 2), sizeof(uint));
+        _stripBuffer.SetData(new uint[StripCount + 2]);
         RopeEffect.SetGraphicsBuffer(PositionsBufferName, _positionsBuffer);
         RopeEffect.SetGraphicsBuffer(StripBufferName, _stripBuffer);
     }

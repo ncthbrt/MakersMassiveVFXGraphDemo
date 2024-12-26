@@ -33,7 +33,6 @@ void UpdateSimpleRope(inout VFXAttributes attributes, RWStructuredBuffer<uint> s
                 
                 if (attributes.particleIndexInStrip < particleCountInStrip - 1)
                 {
-                    
                     uint otherIndex = currIndex + 1;
                     float3 other = Int3ToFloat3(AtomicReadBuffer(positionsBuffer, otherIndex));
                     float3 delta = other - attributes.position;
