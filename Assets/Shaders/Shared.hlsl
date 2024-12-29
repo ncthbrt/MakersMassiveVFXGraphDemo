@@ -51,5 +51,4 @@ inline int3 ReadBuffer(RWStructuredBuffer<int> buffer, uint index)
 {
     return int3(buffer[index * 3], buffer[index * 3 + 1], buffer[index * 3 + 2]);
 }
-
 #endif

@@ -569,7 +569,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 267144521}
 --- !u!114 &267144516
@@ -636,8 +636,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 267144521}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &267144520
 VFXRenderer:
   serializedVersion: 1
@@ -809,7 +807,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 307854201}
 --- !u!114 &307854196
@@ -876,8 +874,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 307854201}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &307854200
 VFXRenderer:
   serializedVersion: 1
@@ -1129,8 +1125,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 515508261}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &515508260
 VFXRenderer:
   serializedVersion: 1
@@ -1263,7 +1257,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 515508261}
 --- !u!1001 &584508876
@@ -1446,8 +1440,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 607049499}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &607049498
 VFXRenderer:
   serializedVersion: 1
@@ -1626,7 +1618,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 607049499}
 --- !u!1 &656244389
@@ -1680,7 +1672,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 656244397}
 --- !u!114 &656244392
@@ -1747,8 +1739,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 656244397}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &656244396
 VFXRenderer:
   serializedVersion: 1
@@ -2375,7 +2365,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 1282498323}
 --- !u!114 &1282498318
@@ -2442,8 +2432,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 1282498323}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &1282498322
 VFXRenderer:
   serializedVersion: 1
@@ -2667,8 +2655,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 1342945590}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &1342945589
 VFXRenderer:
   serializedVersion: 1
@@ -2801,7 +2787,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 1342945590}
 --- !u!1 &1551146310
@@ -3069,7 +3055,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 1851963135}
 --- !u!114 &1851963130
@@ -3136,8 +3122,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 1851963135}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &1851963134
 VFXRenderer:
   serializedVersion: 1
@@ -3309,7 +3293,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2007a10d979fc451fba0952659155a55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <MaxSpeed>k__BackingField: 120
+  <MaxSpeed>k__BackingField: 200
   <TimeToMaxSpeed>k__BackingField: 2
   <VisualEffect>k__BackingField: {fileID: 2013801141}
 --- !u!114 &2013801136
@@ -3376,8 +3360,6 @@ MonoBehaviour:
   <RopeEffect>k__BackingField: {fileID: 2013801141}
   <ParticleSystemName>k__BackingField: Rope
   <PositionsBufferName>k__BackingField: RopeBuffer
-  <StripBufferName>k__BackingField: StripBuffer
-  <StripCount>k__BackingField: 32
 --- !u!73398921 &2013801140
 VFXRenderer:
   serializedVersion: 1

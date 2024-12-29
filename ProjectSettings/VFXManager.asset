@@ -10,7 +10,7 @@ VFXManager:
   m_EmptyShader: {fileID: 4800000, guid: 33a2079f6a2db4c4eb2e44b33f4ddf6b, type: 3}
   m_RenderPipeSettingsPath: 
   m_FixedTimeStep: 0.01666667
-  m_MaxDeltaTime: 0.05
+  m_MaxDeltaTime: 0.01666667
   m_MaxScrubTime: 30
   m_MaxCapacity: 100000000
   m_CompiledVersion: 7
